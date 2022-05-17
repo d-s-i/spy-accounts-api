@@ -1,0 +1,125 @@
+import { Helper } from "./Helper";
+import { GetBlockResponse } from "starknet-analyzer/src/types/rawStarknet";
+import { ContractDataTree } from "../types";
+import { Provider } from "starknet";
+import { getSelectorFromName } from "starknet/utils/hash";
+import { InvokeFunctionTransaction, DeployTransaction } from "starknet/types";
+
+export class OnChainHelper {
+
+    private _provider: Provider;
+    private _EXECUTE_SELECTOR: string;
+    private _AVG_STARKNET_MIN_PER_BLOCK = 1.5; // 1min30s
+    private _STARKNET_BLOCKS_PER_DAY =  Helper.MIN_PER_DAY / this.AVG_STARKNET_MIN_PER_BLOCK;
+    private _blocks: { [key: string]: GetBlockResponse };
+    
+    constructor(provider: Provider) {
+        this._provider = provider;
+        this._EXECUTE_SELECTOR = getSelectorFromName("__execute__");
+        this._blocks = {};
+    }
+    
+    async getYesterdayBlockRange() {
+        const latestBlockNumber = await this._getLatestBlockNumber();
+        const startBlockNumber = latestBlockNumber - this.STARKNET_BLOCKS_PER_DAY;
+        
+        return [startBlockNumber, latestBlockNumber];
+    }
+    
+    async _getAllTransactionsWithinBlockRange(startBlockNumber: number, endBlockNumber: number) {
+
+        const milestones = Helper.getMilestones(startBlockNumber, endBlockNumber);
+        
+        let allTransactions = [];
+        // TODO: Add fee per transaction => sort address per fee spent
+        for(let i = startBlockNumber; i <= endBlockNumber; i++) {
+            Helper.displayProgress(milestones, i, "fetching blocks");
+    
+            const _block = await this.getBlock(i.toString());
+            const block = Helper.forceCast(_block) as GetBlockResponse;
+            allTransactions.push(...block.transactions);
+        }
+    
+        return allTransactions;
+    }
+    
+    async _getLatestBlockNumber() {
+        const latestBlock = await this.provider.getBlock("pending");
+        return latestBlock.block_number;
+    }
+
+    async getBlock(blockNumber: string) {
+        if(this.blocks[blockNumber]) {
+            return this.blocks[blockNumber];
+        } else {
+            const _block = await this.provider.getBlock(blockNumber);
+            const block = Helper.forceCast(_block) as GetBlockResponse;
+            this._blocks[blockNumber] = block;
+            await Helper.sleep(500);
+            return block;
+        }
+    }
+    
+    // async getBlock(blockNumber: number) {
+    //     const buildPath = path.resolve(__dirname, `../data/blocks/${blockNumber}.json`);
+    //     let block: GetBlockResponse;
+    //     if(fs.existsSync(buildPath)) {
+    //         block = fs.readJsonSync(buildPath);
+    //     } else {
+    //         const _block = await this.provider.getBlock(blockNumber);
+    //         block = Helper.forceCast(_block) as GetBlockResponse;
+    //         Helper.writeInFile(`../data/blocks/${blockNumber}.json`, block);
+    //     }
+    //     return block;
+    // }
+
+    _getContractActivity(transactions: (DeployTransaction | InvokeFunctionTransaction)[]) {
+        let contractsActivity: ContractDataTree = {};
+        for(const tx of transactions) {
+            if(tx.type === "DEPLOY") continue;
+            const type = this._getContractType(tx);
+    
+            let amount = contractsActivity[tx.contract_address] && contractsActivity[tx.contract_address].transactionCount;
+            
+            let rawTransactions;
+            if(contractsActivity[tx.contract_address] && contractsActivity[tx.contract_address].rawTransactions) {
+                rawTransactions = [...contractsActivity[tx.contract_address].rawTransactions, tx];
+            } else {
+                rawTransactions = [tx];
+            }
+    
+            contractsActivity[tx.contract_address] = {
+                transactionCount: isNaN(amount) ? 1 : amount + 1,
+                type: type,
+                rawTransactions
+            };
+        }
+        return contractsActivity;
+    }
+    
+    _getContractType(transaction: InvokeFunctionTransaction) {
+        // assuming accounts contract calls `__execute__`
+        // other solution : calling `get_signer` for Argent Accounts or `get_public_key` for OpenZeppelin Accounts, but it is very long
+        return transaction.entry_point_selector === this.EXECUTE_SELECTOR ? "ACCOUNT_CONTRACT" : "GENERAL_CONTRACT";
+    }
+    
+    get provider() {
+        return this._provider;
+    }
+
+    get blocks() {
+        return this._blocks;
+    }
+
+    get EXECUTE_SELECTOR() {
+        return this._EXECUTE_SELECTOR;
+    }
+    
+    get AVG_STARKNET_MIN_PER_BLOCK() {
+        return this._AVG_STARKNET_MIN_PER_BLOCK
+    }
+
+    get STARKNET_BLOCKS_PER_DAY() {
+        return this._STARKNET_BLOCKS_PER_DAY
+    }
+}
