@@ -1,19 +1,19 @@
 import { OnChainHelper } from "./OnChainHelper";
 import { TransactionCallOrganizer } from "starknet-analyzer/lib/organizers/TransactionCallOrganizer";
 import { FunctionCall } from "starknet-analyzer/src/types/organizedStarknet";
-import { ContractData, ContractDataTree } from "../types";
+import { ContractData, ContractDataTree, BlocksTree } from "./types.d";
 
 import { Provider } from "starknet";
 
 export class AccountAnalyzer extends OnChainHelper {
 
-    private _sortedContractActivity: ContractDataTree;
-    private _organizedContractActivity: ContractDataTree;
+    private _sortedContractsActivity: ContractDataTree;
+    private _organizedAccountsActivity: ContractDataTree;
     
-    constructor(provider: Provider) {
-        super(provider);
-        this._sortedContractActivity = {};
-        this._organizedContractActivity = {};
+    constructor(provider: Provider, blocks?: BlocksTree) {
+        super(provider, blocks);
+        this._sortedContractsActivity = {};
+        this._organizedAccountsActivity = {};
     }
     
     async getTopAccountsFromBlockNumbers(startBlockNumber: number, endBlockNumber: number) {
@@ -24,11 +24,10 @@ export class AccountAnalyzer extends OnChainHelper {
             
         const contractsActivity = super._getContractActivity(allTransactions);
     
-        this._sortedContractActivity = this._sortContractsPerActivity(contractsActivity);
+        this._sortedContractsActivity = this._sortContractsPerActivity(contractsActivity);
     
         console.log("Done getting top accounts.");
         return this;
-        
     }
 
     async organizeTransactionsForAccounts(amount: number, _sortedAccountsActivity?: ContractDataTree) {
@@ -46,7 +45,7 @@ export class AccountAnalyzer extends OnChainHelper {
             i++;
         }
     
-        this._organizedContractActivity = organizedSortedAccountsActivity;
+        this._organizedAccountsActivity = organizedSortedAccountsActivity;
         return this;
     }
 
@@ -110,15 +109,15 @@ export class AccountAnalyzer extends OnChainHelper {
     }
 
     _getSortedContractsActivity(_sortedContractsActivity?: ContractDataTree) {
-        return _sortedContractsActivity ? _sortedContractsActivity : this.sortedContractActivity; 
+        return _sortedContractsActivity ? _sortedContractsActivity : this.sortedContractsActivity; 
     }
 
-    get sortedContractActivity() {
-        return this._sortedContractActivity;
+    get sortedContractsActivity() {
+        return this._sortedContractsActivity;
     }
 
-    get organizedContractActivity() {
-        return this._organizedContractActivity;
+    get organizedAccountsActivity() {
+        return this._organizedAccountsActivity;
     }
     
 }

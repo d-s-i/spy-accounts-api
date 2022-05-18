@@ -5,19 +5,19 @@ import { RawTransactionReceiptModel } from "./rawTransactionReceiptModel";
 const blockSchema = new mongoose.Schema({
     block_hash: {
         type: String,
-        // required: [true, "A block must have a block hash"]
+        required: [true, "A block must have a block hash"]
     },
     parent_block_hash: {
         type: String,
-        // required: [true, "A block must have a parent block hash"]
+        required: [true, "A block must have a parent block hash"]
     },
     block_number: {
         type: Number,
-        // required: [true, "A block must have a block number"]
+        required: [true, "A block must have a block number"]
     },
     state_root: {
         type: String,
-        // required: [true, "A block must have a state root"]
+        required: [true, "A block must have a state root"]
     },
     status: {
         type: String,
@@ -29,7 +29,7 @@ const blockSchema = new mongoose.Schema({
     },
     transactions: {
         type: [RawTransactionsModel.schema],
-        // required: [true, "A raw transaction must have transactions"]
+        required: [true, "A raw transaction must have transactions"]
     },
     timestamp: {
         type: Number,
@@ -38,7 +38,7 @@ const blockSchema = new mongoose.Schema({
     sequencer_address: String,
     transaction_receipts: {
         type: [RawTransactionReceiptModel.schema],
-        // required: [true, "A raw transaction must have transactions receipts"]
+        required: [true, "A raw transaction must have transactions receipts"]
     }
 });
 

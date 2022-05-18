@@ -1,16 +1,12 @@
 import mongoose from "mongoose";
 import { RawTransactionsModel } from "./rawTransactionsModel";
 
-const activeAccountsSchema = new mongoose.Schema({
-    accountAddress: {
-        type: String,
-        required: [true, "An active account must have an address"]
-    },
+const sortedContractActivitySchema = new mongoose.Schema({
     transactionCount: {
         type: Number,
         required: [true, "An active account must have a transaction count"]
     },
-    accountType: {
+    type: {
         type: String,
         required: [true, "An active account must have an account type"]
     },
@@ -20,4 +16,4 @@ const activeAccountsSchema = new mongoose.Schema({
     }
 });
 
-export const ActiveAccountsModel = mongoose.model("ActiveAccountsModel", activeAccountsSchema);
+export const SortedContractActivityModel = mongoose.model("SortedContractActivityModel", sortedContractActivitySchema);

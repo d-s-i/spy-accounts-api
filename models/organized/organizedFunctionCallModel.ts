@@ -1,11 +1,10 @@
 import mongoose from "mongoose";
-import { BigNumberModel } from "../utils/BigNumberModel";
+import { OrganizedCalldataModel } from "./organizedCalldataModel";
 
 const organizedFunctionCallSchema = new mongoose.Schema({
-    type: mongoose.Schema.Types.Map,
-    of: {
-        type: mongoose.Schema.Types.Mixed
-    }
+    name: String,
+    type: String,
+    value: OrganizedCalldataModel.schema
 });
 
-export const OrganizedFunctionCallModel = mongoose.model("OrganizedFunctionCallModel", organizedFunctionCallSchema);
+export const OrganizedFunctionCallModel = mongoose.model("organizedFunctionCallModel", organizedFunctionCallSchema);

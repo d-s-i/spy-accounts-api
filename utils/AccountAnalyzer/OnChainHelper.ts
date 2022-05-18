@@ -1,6 +1,6 @@
 import { Helper } from "./Helper";
 import { GetBlockResponse } from "starknet-analyzer/src/types/rawStarknet";
-import { ContractDataTree } from "../types";
+import { ContractDataTree, BlocksTree } from "./types";
 import { Provider } from "starknet";
 import { getSelectorFromName } from "starknet/utils/hash";
 import { InvokeFunctionTransaction, DeployTransaction } from "starknet/types";
@@ -11,18 +11,18 @@ export class OnChainHelper {
     private _EXECUTE_SELECTOR: string;
     private _AVG_STARKNET_MIN_PER_BLOCK = 1.5; // 1min30s
     private _STARKNET_BLOCKS_PER_DAY =  Helper.MIN_PER_DAY / this.AVG_STARKNET_MIN_PER_BLOCK;
-    private _blocks: { [key: string]: GetBlockResponse };
+    private _blocks: BlocksTree;
     
-    constructor(provider: Provider) {
+    constructor(provider: Provider, blocks?: BlocksTree) {
         this._provider = provider;
         this._EXECUTE_SELECTOR = getSelectorFromName("__execute__");
-        this._blocks = {};
+        this._blocks = blocks || {};
     }
     
     async getYesterdayBlockRange() {
         const latestBlockNumber = await this._getLatestBlockNumber();
         const startBlockNumber = latestBlockNumber - this.STARKNET_BLOCKS_PER_DAY;
-        
+
         return [startBlockNumber, latestBlockNumber];
     }
     
@@ -45,6 +45,11 @@ export class OnChainHelper {
     
     async _getLatestBlockNumber() {
         const latestBlock = await this.provider.getBlock("pending");
+        if(isNaN(latestBlock.block_number)) {
+            throw new Error(
+                `OnChainHelper::_getLatestBlockNumber - latestBlockNumber is not a number (latestBlockNumber: ${latestBlock.block_number})`
+            );
+        }
         return latestBlock.block_number;
     }
 
@@ -59,19 +64,6 @@ export class OnChainHelper {
             return block;
         }
     }
-    
-    // async getBlock(blockNumber: number) {
-    //     const buildPath = path.resolve(__dirname, `../data/blocks/${blockNumber}.json`);
-    //     let block: GetBlockResponse;
-    //     if(fs.existsSync(buildPath)) {
-    //         block = fs.readJsonSync(buildPath);
-    //     } else {
-    //         const _block = await this.provider.getBlock(blockNumber);
-    //         block = Helper.forceCast(_block) as GetBlockResponse;
-    //         Helper.writeInFile(`../data/blocks/${blockNumber}.json`, block);
-    //     }
-    //     return block;
-    // }
 
     _getContractActivity(transactions: (DeployTransaction | InvokeFunctionTransaction)[]) {
         let contractsActivity: ContractDataTree = {};

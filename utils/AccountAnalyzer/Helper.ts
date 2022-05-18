@@ -1,7 +1,7 @@
 import path from "path";
 import fs from "fs-extra";
 import { BigNumber } from "ethers";
-import { RangeMilestones } from "../types";
+import { RangeMilestones } from "./types";
 
 const _importDynamic = new Function("modulePath", "return import(modulePath)");
 

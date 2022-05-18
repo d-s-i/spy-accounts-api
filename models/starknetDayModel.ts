@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import { BlockModel } from "./raw/blockModel";
-import { ActiveAccountsModel } from "./raw/activeAccountsModel";
-import { OrganizedActiveAccountsModel } from "./organized/organizedActiveAccountsModel";
+import { SortedContractActivityModel } from "./raw/sortedContractActivityModel";
+import { OrganizedAccountsActivityModel } from "./organized/organizedAccountsActivityModel";
 
 const starknetDaySchema = new mongoose.Schema({
     date: {
@@ -9,14 +9,23 @@ const starknetDaySchema = new mongoose.Schema({
         required: [true, "A StarkNet day must have a date"]
     },
     blocks: {
-        type: [BlockModel.schema],
+        type: mongoose.Schema.Types.Map,
+        of: {
+            type: BlockModel.schema
+        },
         required: [true, "A StarkNet day must have an array of blocks"]
     },
-    activeAccounts: {
-        type: [ActiveAccountsModel.schema],
+    sortedContractsActivity: {
+        type: mongoose.Schema.Types.Map,
+        of: {
+            type: SortedContractActivityModel.schema
+        }
     },
-    organizedActiveAccounts: {
-        type: [OrganizedActiveAccountsModel.schema],
+    organizedAccountsActivity: {
+        type: mongoose.Schema.Types.Map,
+        of: {
+            type: OrganizedAccountsActivityModel.schema
+        }
     }
 });
 
