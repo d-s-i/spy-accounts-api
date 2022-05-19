@@ -1,8 +1,7 @@
 import express from "express";
+import { StarknetDayModel } from "../models/starknetDayModel";
 
 import {
-    findStarknetDay,
-    findYesterdayStarknetDay,
     checkStarknetDayExistingProperties,
 } from "../utils";
 
@@ -71,7 +70,7 @@ export const getOrganizedAccountsActivityPerDate = async function(req: express.R
 export const addYesterdayStarknetDay = async function(req: express.Request, res: express.Response) {
     const apiActions = new ApiActions(res);
     
-    const starknetDay = await findYesterdayStarknetDay();
+    const starknetDay = await apiActions.findStarknetDay(Date.now());
     const {
         starkneyDayExist,
         sortedContractsActivityExist,
@@ -80,45 +79,52 @@ export const addYesterdayStarknetDay = async function(req: express.Request, res:
     } = checkStarknetDayExistingProperties(starknetDay);
     
     if(!starkneyDayExist) {
-        await apiActions.createStarknetDay();
+        const responseData = await apiActions.createStarknetDay();
+        apiActions.sendCreationSuccessful(responseData);
     } else {
 
         if(!sortedContractsActivityExist && !organizedAccountsActivityExist) {
-            await apiActions.updateAllStarknetDayFields(starknetDay);
+            const responseData = await apiActions.updateAllStarknetDayFields(starknetDay);
+            apiActions.sendUpdateSuccessful(responseData);
+
         } else if (onlySortedContractsActivityExist) {
-            await apiActions.updateStarknetDayWithAccounts(starknetDay);
+            const responseData = await apiActions.updateStarknetDayWithAccounts(starknetDay);
+            apiActions.sendUpdateSuccessful(responseData);
         } else {
-            apiActions.sendAlreadyQueriedResponse();
+            apiActions.sendAlreadyAddedResponse();
         }
     }
 }
 
 export const addBlocksPerDate = async function(req: express.Request, res: express.Response) {
     const apiActions = new ApiActions(res);
-    const starknetDay = await findStarknetDay(req.params.date);
+    const starknetDay = await apiActions.findStarknetDay(req.params.date);
 
     if(!starknetDay) {
-        await apiActions.createStarknetDayWithBlocks();
+        const responseData = await apiActions.createStarknetDayWithBlocks();
+        apiActions.sendCreationSuccessful(responseData);
     } else {
-        apiActions.sendAlreadyQueriedResponse();
+        apiActions.sendAlreadyAddedResponse();
     }
 }
 
 export const addSortedContractsActivityPerDate = async function(req: express.Request, res: express.Response) {
     const apiActions = new ApiActions(res);
-    const starknetDay = await findStarknetDay(req.params.date);
+    const starknetDay = await apiActions.findStarknetDay(req.params.date);
     const {
         starkneyDayExist,
         sortedContractsActivityExist,
     } = checkStarknetDayExistingProperties(starknetDay);
 
     if(!starkneyDayExist) {
-        await apiActions.createStarknetDayWithSortedContractsActivity();
+        const responseData = await apiActions.createStarknetDayWithSortedContractsActivity();
+        apiActions.sendCreationSuccessful(responseData);
     } else {
         if(!sortedContractsActivityExist) {
-            await apiActions.updateStarknetDayWithContractsActivity(starknetDay);
+            const responseData = await apiActions.updateStarknetDayWithContractsActivity(starknetDay);
+            apiActions.sendUpdateSuccessful(responseData);
         } else {
-            apiActions.sendAlreadyQueriedResponse();
+            apiActions.sendAlreadyAddedResponse();
         }
     }
 }
@@ -135,5 +141,12 @@ export const deleteStarknetDay = async function(req: express.Request, res: expre
     } catch(error) {
         apiActions.sendError(error);
     }
-    
+}
+
+export const deleteOrganizedAccounts = async function(req: express.Request, res: express.Response) {
+    const apiActions = new ApiActions(res);
+
+    const responseData = await apiActions.deleteField(req.params.date, "organizedAccountsActivity");
+    apiActions.sendUpdateSuccessful(responseData);
+
 }

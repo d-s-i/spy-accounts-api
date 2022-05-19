@@ -9,7 +9,8 @@ import {
     getSortedContractsActivityPerDate,
     addBlocksPerDate,
     addSortedContractsActivityPerDate,
-    getOrganizedAccountsActivityPerDate
+    getOrganizedAccountsActivityPerDate,
+    deleteOrganizedAccounts
 } from "../controllers/starknetDayController";
 
 const starknetDayRouter = express.Router();
@@ -21,6 +22,6 @@ starknetDayRouter.route("/yesterday").get((req: any, res: express.Response) => {
 starknetDayRouter.route("/:date").get(getStarknetDay).delete(deleteStarknetDay);
 starknetDayRouter.route("/:date/blocks").get(getBlocksPerDate).post(addBlocksPerDate);
 starknetDayRouter.route("/:date/sortedContractsActivity").get(getSortedContractsActivityPerDate).post(addSortedContractsActivityPerDate);
-starknetDayRouter.route("/:date/organizedAccountsActivity").get(getOrganizedAccountsActivityPerDate);
+starknetDayRouter.route("/:date/organizedAccountsActivity").get(getOrganizedAccountsActivityPerDate).post(deleteOrganizedAccounts);
 
 export default starknetDayRouter;

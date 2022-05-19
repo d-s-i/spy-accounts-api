@@ -1,34 +1,12 @@
-import express from "express";
-import { StarknetDayModel } from "../models/starknetDayModel";
-
-import { defaultProvider } from "starknet";
-
-import { AccountAnalyzer } from "../utils/AccountAnalyzer/AccountAnalyzer";
+import { ContractDataTree } from "./AccountAnalyzer/types";
 import { AnyMongooseQuery } from "./types";
-import { BlocksTree, ContractDataTree } from "../utils/AccountAnalyzer/types";
+import { InvokeFunctionTransaction } from "starknet/types";
+import { BigNumber } from "ethers";
 
 export const mongooseMapToPOJO = function(
     _map: AnyMongooseQuery
 ) {
     return _map.toObject({ flattenMaps: true });
-}
-
-export const findStarknetDay = async function(timestamp: number | string | Date) {
-    try {
-        const starknetDay = await StarknetDayModel.findOne({ 
-            date: { 
-                $gte: new Date(timestamp).setHours(0,0,0), 
-                $lt: new Date(timestamp).setHours(23,59,59) 
-            } 
-        });
-        return starknetDay;
-    } catch(error) {
-        return undefined;
-    }
-}
-
-export const findYesterdayStarknetDay = async function() {
-    return findStarknetDay(Date.now());
 }
 
 export const checkStarknetDayExistingProperties = function(starknetDay: AnyMongooseQuery) {
@@ -45,9 +23,46 @@ export const checkStarknetDayExistingProperties = function(starknetDay: AnyMongo
     };
 }
 
-export const sendAlreadyQueriedResponse = function(res: express.Response) {
-    res.status(208).json({
-        status: "already-queried",
-        message: "Document already present in the database at this date"
-    });
+export const stringifyValueField = function(_organizedAccountsActivity: Required<ContractDataTree>) {
+    let organizedAccountsActivity: {
+        [key: string]: { 
+            transactionCount: number, 
+            type: string,
+            rawTransactions: InvokeFunctionTransaction[],
+            organizedTransactions?: {
+                name: string,
+                to: BigNumber,
+                calldata: {
+                    name: string,
+                    type: string,
+                    value: string
+                }
+            }[]
+        }
+    } = {};
+
+    for(const acc in _organizedAccountsActivity) {
+        const _organizedTransactions = _organizedAccountsActivity[acc].organizedTransactions?.map(otx => {
+            const _calldata = otx.calldata.map((calldata: any) => {
+                return {
+                    name: calldata.name,
+                    type: calldata.type,
+                    value: JSON.stringify(calldata.value).toString()
+                }
+            })
+            return {
+                name: otx.name,
+                to: otx.to,
+                calldata: _calldata
+            }
+        });
+        organizedAccountsActivity[acc] = {
+            transactionCount: _organizedAccountsActivity[acc].transactionCount,
+            type: _organizedAccountsActivity[acc].type,
+            rawTransactions: _organizedAccountsActivity[acc].rawTransactions,
+            organizedTransactions: _organizedTransactions
+        };
+    }
+
+    return organizedAccountsActivity;
 }

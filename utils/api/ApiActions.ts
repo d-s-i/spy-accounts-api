@@ -4,7 +4,7 @@ import { StarknetDayModel } from "../../models/starknetDayModel";
 import { defaultProvider } from "starknet";
 
 import { AccountAnalyzer } from "../AccountAnalyzer/AccountAnalyzer";
-import { mongooseMapToPOJO } from "../index";
+import { mongooseMapToPOJO, stringifyValueField } from "../index";
 
 import {
     fetchBlocksAndContractsAndAccounts,
@@ -17,7 +17,6 @@ import { AnyMongooseQuery } from "../types";
 import { ApiResponses } from "./ApiResponses";
 
 export class ApiActions extends ApiResponses {
-
     
     constructor(res: express.Response) {
         super(res);
@@ -36,73 +35,29 @@ export class ApiActions extends ApiResponses {
             return undefined;
         }
     }
-
-    async deleteStarknetDay(date: string) {
-        const starknetDay = await this.findStarknetDay(date);
-        await StarknetDayModel.findByIdAndDelete(starknetDay._id);
-    }
     
     async createStarknetDay() {
         try {
             const {
                 blocks, 
                 sortedContractsActivity,
-                organizedAccountsActivity
+                organizedAccountsActivity: _organizedAccountsActivity
             } = await fetchBlocksAndContractsAndAccounts();
+
+            const organizedAccountsActivity = stringifyValueField(_organizedAccountsActivity);
             
             const starknetDay = await StarknetDayModel.create({ 
                 date: Date.now(), 
                 blocks,
                 sortedContractsActivity,
-                organizedAccountsActivity
+                organizedAccountsActivity: organizedAccountsActivity
             });
     
-            super.sendCreationSuccessful({ starknetDay });
+            // super.sendCreationSuccessful({ starknetDay });
+            return { starknetDay };
         } catch(error) {
             this.sendError(error);
-        }
-    }
-
-    async updateAllStarknetDayFields(starknetDay: AnyMongooseQuery) {
-        try {
-            const blocks = mongooseMapToPOJO(starknetDay.blocks);
             
-            const {
-                sortedContractsActivity,
-                organizedAccountsActivity
-            } = await fetchContractsAndAccountsActivityFromBlocks(blocks);
-    
-            const newStarknetDay = await StarknetDayModel.findByIdAndUpdate(
-                starknetDay._id, 
-                { 
-                    sortedContractsActivity,
-                    organizedAccountsActivity
-                },
-                { new: true }
-            );
-    
-            super.sendUpdateSuccessful({ newStarknetDay });
-        } catch(error) {
-            super.sendError(error);
-        }
-    }
-
-    async updateStarknetDayWithAccounts(starknetDay: AnyMongooseQuery) {
-        try {
-            const blocks = mongooseMapToPOJO(starknetDay.blocks);
-            const sortedContractsActivity = mongooseMapToPOJO(starknetDay.activeContracts);
-    
-            const organizedAccountsActivity = await fetchAccountsActivityFromContractsActivity(blocks, sortedContractsActivity);
-    
-            const newStarknetDay = await StarknetDayModel.findByIdAndUpdate(
-                starknetDay._id, 
-                { organizedAccountsActivity },
-                { new: true }
-            );
-    
-            super.sendUpdateSuccessful({ newStarknetDay });
-        } catch(error) {
-            super.sendError(error);
         }
     }
 
@@ -118,7 +73,8 @@ export class ApiActions extends ApiResponses {
                 blocks: accountAnalyzer.blocks
             });
     
-            super.sendCreationSuccessful({ starknetDay });
+            return { starknetDay };
+            // super.sendCreationSuccessful({ starknetDay });
         } catch(error) {
             super.sendError(error);
         }
@@ -134,8 +90,58 @@ export class ApiActions extends ApiResponses {
                 sortedContractsActivity
             });
 
-            super.sendCreationSuccessful({ starknetDay });
+            // super.sendCreationSuccessful({ starknetDay });
+            return { starknetDay };
         } catch(error) {
+            super.sendError(error);
+        }
+    }
+
+    async updateAllStarknetDayFields(starknetDay: AnyMongooseQuery) {
+        try {
+            const blocks = mongooseMapToPOJO(starknetDay.blocks);
+            
+            const {
+                sortedContractsActivity,
+                organizedAccountsActivity: _organizedAccountsActivity
+            } = await fetchContractsAndAccountsActivityFromBlocks(blocks);
+    
+            const organizedAccountsActivity = stringifyValueField(_organizedAccountsActivity);
+            
+            const newStarknetDay = await StarknetDayModel.findByIdAndUpdate(
+                starknetDay._id, 
+                { 
+                    sortedContractsActivity,
+                    organizedAccountsActivity: organizedAccountsActivity
+                },
+                { new: true }
+            );
+    
+            return { newStarknetDay };
+            // super.sendUpdateSuccessful({ newStarknetDay });
+        } catch(error) {
+            super.sendError(error);
+        }
+    }
+
+    async updateStarknetDayWithAccounts(starknetDay: AnyMongooseQuery) {
+        try {
+            const blocks = mongooseMapToPOJO(starknetDay.blocks);
+            const sortedContractsActivity = mongooseMapToPOJO(starknetDay.sortedContractsActivity);
+    
+            const _organizedAccountsActivity = await fetchAccountsActivityFromContractsActivity(blocks, sortedContractsActivity);
+            const organizedAccountsActivity = stringifyValueField(_organizedAccountsActivity);
+
+            const newStarknetDay = await StarknetDayModel.findByIdAndUpdate(
+                starknetDay._id, 
+                { organizedAccountsActivity },
+                { new: true }
+            );
+    
+            return { newStarknetDay }
+            // super.sendUpdateSuccessful({ newStarknetDay });
+        } catch(error) {
+            console.log(error)
             super.sendError(error);
         }
     }
@@ -151,7 +157,29 @@ export class ApiActions extends ApiResponses {
                 { new: true }
             );
             
-            super.sendUpdateSuccessful({ newStarknetDay });
+            // super.sendUpdateSuccessful({ newStarknetDay });
+            return { newStarknetDay }
+        } catch(error) {
+            super.sendError(error);
+        }
+    }
+
+    async deleteStarknetDay(date: string) {
+        const starknetDay = await this.findStarknetDay(date);
+        await StarknetDayModel.findByIdAndDelete(starknetDay._id);
+    }
+
+    async deleteField(date: string, field: string) {
+        try {
+            const _starknetDay = await this.findStarknetDay(date);
+
+            const newStarknetDay = await StarknetDayModel.findByIdAndUpdate(
+                _starknetDay._id, 
+                { $unset: { [field]: 1 } },
+                { new: true }
+            );
+
+            return { newStarknetDay };
         } catch(error) {
             super.sendError(error);
         }

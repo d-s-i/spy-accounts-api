@@ -15,17 +15,17 @@ export class ApiResponses {
         });
     }
     
-    sendCreationSuccessful(_data: object) {
+    sendCreationSuccessful(_data: object | undefined) {
         this._res.status(200).json({
             status: "success",
-            data: _data
+            data: _data || {}
         });
     }
 
-    sendUpdateSuccessful(_data: object) {
-        this._res.status(200).json({
+    sendUpdateSuccessful(_data: object | undefined) {
+        this._res.status(201).json({
             status: "success",
-            data: _data
+            data: _data || {}
         });
     }
 
@@ -43,9 +43,9 @@ export class ApiResponses {
         });
     }
 
-    sendAlreadyQueriedResponse() {
+    sendAlreadyAddedResponse() {
         this._res.status(208).json({
-            status: "already-queried",
+            status: "already-added",
             message: "Document already present in the database at this date"
         });
     }
