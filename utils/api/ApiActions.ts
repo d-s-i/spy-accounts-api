@@ -53,9 +53,9 @@ export class ApiActions extends ApiResponses {
                 organizedAccountsActivity: organizedAccountsActivity
             });
     
-            // super.sendCreationSuccessful({ starknetDay });
             return { starknetDay };
         } catch(error) {
+            console.log(error);
             this.sendError(error);
             
         }
@@ -74,7 +74,6 @@ export class ApiActions extends ApiResponses {
             });
     
             return { starknetDay };
-            // super.sendCreationSuccessful({ starknetDay });
         } catch(error) {
             super.sendError(error);
         }
@@ -90,7 +89,6 @@ export class ApiActions extends ApiResponses {
                 sortedContractsActivity
             });
 
-            // super.sendCreationSuccessful({ starknetDay });
             return { starknetDay };
         } catch(error) {
             super.sendError(error);
@@ -118,7 +116,6 @@ export class ApiActions extends ApiResponses {
             );
     
             return { newStarknetDay };
-            // super.sendUpdateSuccessful({ newStarknetDay });
         } catch(error) {
             super.sendError(error);
         }
@@ -139,7 +136,6 @@ export class ApiActions extends ApiResponses {
             );
     
             return { newStarknetDay }
-            // super.sendUpdateSuccessful({ newStarknetDay });
         } catch(error) {
             console.log(error)
             super.sendError(error);
@@ -157,7 +153,6 @@ export class ApiActions extends ApiResponses {
                 { new: true }
             );
             
-            // super.sendUpdateSuccessful({ newStarknetDay });
             return { newStarknetDay }
         } catch(error) {
             super.sendError(error);
@@ -167,6 +162,21 @@ export class ApiActions extends ApiResponses {
     async deleteStarknetDay(date: string) {
         const starknetDay = await this.findStarknetDay(date);
         await StarknetDayModel.findByIdAndDelete(starknetDay._id);
+        // try {
+        //     const starknetDay = await this.findStarknetDay(date);
+        //     await StarknetDayModel.findByIdAndDelete(starknetDay._id);
+        // } catch(error) {
+        //     // console.log(error);
+        //     // super.sendError(error)
+        // }
+
+        // try {
+        //     const starknetDay = await this.findStarknetDay(date);
+        //     await StarknetDayModel.findByIdAndDelete(starknetDay._id);
+        // } catch(error) {
+        //     console.log(error);
+        //     super.sendError(error);
+        // }
     }
 
     async deleteField(date: string, field: string) {

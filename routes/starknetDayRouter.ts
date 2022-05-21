@@ -10,18 +10,32 @@ import {
     addBlocksPerDate,
     addSortedContractsActivityPerDate,
     getOrganizedAccountsActivityPerDate,
-    deleteOrganizedAccounts
+    deleteOrganizedAccounts,
+    deleteYesterdayStarknetDay,
+    getYesterdayStarknetDay
 } from "../controllers/starknetDayController";
 
 const starknetDayRouter = express.Router();
 
-starknetDayRouter.route("/yesterday").get((req: any, res: express.Response) => {
-    new ApiResponses(res).sendNotImplemented();
-}).post(addYesterdayStarknetDay);
+starknetDayRouter.route("/yesterday")
+    .get(getYesterdayStarknetDay)
+    .post(addYesterdayStarknetDay)
+    .delete(deleteYesterdayStarknetDay);
 
-starknetDayRouter.route("/:date").get(getStarknetDay).delete(deleteStarknetDay);
-starknetDayRouter.route("/:date/blocks").get(getBlocksPerDate).post(addBlocksPerDate);
-starknetDayRouter.route("/:date/sortedContractsActivity").get(getSortedContractsActivityPerDate).post(addSortedContractsActivityPerDate);
-starknetDayRouter.route("/:date/organizedAccountsActivity").get(getOrganizedAccountsActivityPerDate).post(deleteOrganizedAccounts);
+starknetDayRouter.route("/:date")
+    .get(getStarknetDay)
+    .delete(deleteStarknetDay);
+
+starknetDayRouter.route("/:date/blocks")
+    .get(getBlocksPerDate)
+    .post(addBlocksPerDate);
+
+starknetDayRouter.route("/:date/sortedContractsActivity")
+    .get(getSortedContractsActivityPerDate)
+    .post(addSortedContractsActivityPerDate);
+    
+starknetDayRouter.route("/:date/organizedAccountsActivity")
+    .get(getOrganizedAccountsActivityPerDate)
+    .post(deleteOrganizedAccounts);
 
 export default starknetDayRouter;

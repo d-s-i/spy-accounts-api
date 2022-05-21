@@ -1,9 +1,9 @@
 import { Helper } from "./Helper";
-import { GetBlockResponse } from "starknet-analyzer/src/types/rawStarknet";
+import { GetBlockResponse, InvokeFunctionTransaction } from "starknet-analyzer/src/types/rawStarknet";
 import { ContractDataTree, BlocksTree } from "./types";
 import { Provider } from "starknet";
 import { getSelectorFromName } from "starknet/utils/hash";
-import { InvokeFunctionTransaction, DeployTransaction } from "starknet/types";
+import { DeployTransaction } from "starknet/types";
 
 export class OnChainHelper {
 

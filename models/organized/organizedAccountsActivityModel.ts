@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import { RawTransactionsModel } from "../raw/rawTransactionsModel";
-import { OrganizedTransactionsModel } from "./organizedTransactionsModel";
+import { OrganizedTransactionModel } from "./OrganizedTransactionModel";
 
 const organizedAccountsActivitySchema = new mongoose.Schema({
     transactionCount: {
@@ -16,7 +16,7 @@ const organizedAccountsActivitySchema = new mongoose.Schema({
         required: [true, "An organized active account must have an array of raw transactions"]
     },
     organizedTransactions: {
-        type: [OrganizedTransactionsModel.schema],
+        type: [OrganizedTransactionModel.schema],
         required: [true, "An organized active account must have an array of organized transactions"]
     }
 });

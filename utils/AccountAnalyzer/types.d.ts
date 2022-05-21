@@ -1,6 +1,5 @@
-import { InvokeFunctionTransaction } from "starknet/types";
 import { FunctionCall } from "starknet-analyzer/src/types/organizedStarknet";
-import { GetBlockResponse } from "starknet-analyzer/src/types/rawStarknet";
+import { GetBlockResponse, InvokeFunctionTransaction } from "starknet-analyzer/src/types/rawStarknet";
 
 export interface ContractDataTree {
     [key: string]: ContractData
@@ -10,8 +9,13 @@ export interface ContractData {
     transactionCount: number, 
     type: string,
     rawTransactions: InvokeFunctionTransaction[],
-    organizedTransactions?: FunctionCall[]
+    organizedTransactions?: OrganizedTransaction[]
 } 
+
+export interface OrganizedTransaction {
+    transactionHash: string,
+    organizedFunctionCalls: FunctionCall[]
+}
 
 export interface BlocksTree { [key: string]: GetBlockResponse }
 
