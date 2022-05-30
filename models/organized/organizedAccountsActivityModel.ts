@@ -2,7 +2,6 @@ import mongoose from "mongoose";
 import { RawTransactionsModel } from "../raw/rawTransactionsModel";
 import { OrganizedTransactionModel } from "./organizedTransactionModel";
 
-// test
 const organizedAccountsActivitySchema = new mongoose.Schema({
     transactionCount: {
         type: Number,
