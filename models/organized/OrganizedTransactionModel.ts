@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { OrganizedFunctionCallModel } from "./OrganizedFunctionCallModel";
+import { OrganizedFunctionCallModel } from "./organizedFunctionCallModel";
 
 const organizedTransactionSchema = new mongoose.Schema({
     transactionHash: String,
