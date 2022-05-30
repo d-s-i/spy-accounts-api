@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import { RawTransactionsModel } from "../raw/rawTransactionsModel";
-import { OrganizedTransactionModel } from "./organizedTransactionModel";
+import { OrganizedTransactionModel } from "./OrganizedTransactionModel";
 
 const organizedAccountsActivitySchema = new mongoose.Schema({
     transactionCount: {
