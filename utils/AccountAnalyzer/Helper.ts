@@ -1,5 +1,3 @@
-import path from "path";
-import fs from "fs-extra";
 import { BigNumber } from "ethers";
 import { RangeMilestones } from "./types";
 
@@ -51,7 +49,7 @@ export class Helper {
         } else if(currentIndex === milestoneFour) {
             console.log(`100% of ${actionName} done (${currentIndex}/${milestoneFour})`);
         } else {
-            console.log(`${currentIndex}/${milestoneFour} done`);
+            // console.log(`${currentIndex}/${milestoneFour} done`);
         }
     
     }
@@ -75,18 +73,4 @@ export class Helper {
     
         return milestones;
     }
-    
-    // static writeInFile(_path: string, fileContent: any) {
-    //     const buildPath = path.resolve(__dirname, _path);
-        
-    //     fs.outputJsonSync(
-    //         buildPath,
-    //         fileContent
-    //     );
-    // }
-
-    // static readFile(_path: string) {
-    //     const buildPath = path.resolve(__dirname, _path);
-    //     return fs.readJSONSync(buildPath);
-    // }
 }

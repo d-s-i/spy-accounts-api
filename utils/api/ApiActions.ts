@@ -46,10 +46,13 @@ export class ApiActions extends ApiResponses {
 
             const organizedAccountsActivity = stringifyValueField(_organizedAccountsActivity);
             
+            for(const [addr, activity] of Object.entries(organizedAccountsActivity)) {
+                delete activity.rawTransactions;
+            }
             const starknetDay = await StarknetDayModel.create({ 
                 date: Date.now(), 
-                blocks,
-                sortedContractsActivity,
+                // blocks,
+                // sortedContractsActivity,
                 organizedAccountsActivity: organizedAccountsActivity
             });
     
@@ -66,7 +69,7 @@ export class ApiActions extends ApiResponses {
             const accountAnalyzer = new AccountAnalyzer(defaultProvider);
             const [startBlockNumber, latestBlockNumber] = await accountAnalyzer.getYesterdayBlockRange();
     
-            await accountAnalyzer.getTopAccountsFromBlockNumbers(startBlockNumber, startBlockNumber + 1);
+            await accountAnalyzer.getTopAccountsFromBlockNumbers(startBlockNumber, latestBlockNumber);
     
             const starknetDay = await StarknetDayModel.create({ 
                 date: Date.now(), 

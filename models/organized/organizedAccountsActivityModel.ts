@@ -13,7 +13,7 @@ const organizedAccountsActivitySchema = new mongoose.Schema({
     },
     rawTransactions: {
         type: [RawTransactionsModel.schema],
-        required: [true, "An organized active account must have an array of raw transactions"]
+        // required: [true, "An organized active account must have an array of raw transactions"]
     },
     organizedTransactions: {
         type: [OrganizedTransactionModel.schema],

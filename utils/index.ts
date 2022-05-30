@@ -1,5 +1,4 @@
-import { FunctionCall } from "starknet-analyzer/src/types/organizedStarknet";
-import { ContractDataTree, OrganizedTransaction } from "./AccountAnalyzer/types";
+import { ContractDataTree } from "./AccountAnalyzer/types";
 
 import { AnyMongooseQuery, MongooseContractDataTree } from "./types";
 
@@ -48,7 +47,6 @@ export const stringifyValueField = function(_organizedAccountsActivity: Required
                 organizedFunctionCalls: functionCalls
             };
         });
-        console.log(acc, _organizedTransactions);
         organizedAccountsActivity[acc] = {
             transactionCount: _organizedAccountsActivity[acc].transactionCount,
             type: _organizedAccountsActivity[acc].type,

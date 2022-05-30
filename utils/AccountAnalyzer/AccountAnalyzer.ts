@@ -1,18 +1,20 @@
 import { OnChainHelper } from "./OnChainHelper";
-import { TransactionCallOrganizer } from "starknet-analyzer/lib/organizers/TransactionCallOrganizer";
+import { TransactionCallOrganizer } from "../StarknetAnalyzer/organizers/TransactionCallOrganizer";
+// import { TransactionCallOrganizer } from "starknet-analyzer/lib/organizers/TransactionCallOrganizer";
 import { DeployTransaction } from "starknet/types";
 import { InvokeFunctionTransaction } from "starknet-analyzer/src/types/rawStarknet";
 import { ContractData, ContractDataTree, BlocksTree, OrganizedTransaction } from "./types.d";
 
 import { Provider } from "starknet";
+import { RPCProvider } from "../RPCProvider/RPCProvider";
 
 export class AccountAnalyzer extends OnChainHelper {
 
     private _sortedContractsActivity: ContractDataTree;
     private _organizedAccountsActivity: ContractDataTree;
     
-    constructor(provider: Provider, blocks?: BlocksTree) {
-        super(provider, blocks);
+    constructor(provider: Provider | RPCProvider, blocks?: BlocksTree, msBetweenBlockQuery?: number) {
+        super(provider, blocks, msBetweenBlockQuery);
         this._sortedContractsActivity = {};
         this._organizedAccountsActivity = {};
     }
@@ -70,8 +72,8 @@ export class AccountAnalyzer extends OnChainHelper {
             return amountB.transactionCount - amountA.transactionCount;
         });
         let sortedContractsObject: ContractDataTree = {};
-        for(const [addr, object] of sortedContractsArray) {
-            sortedContractsObject[addr] = object;
+        for(const [addr, contractObject] of sortedContractsArray) {
+            sortedContractsObject[addr] = contractObject;
         }
     
         return sortedContractsObject;

@@ -13,7 +13,7 @@ const starknetDaySchema = new mongoose.Schema({
         of: {
             type: BlockModel.schema
         },
-        required: [true, "A StarkNet day must have an array of blocks"]
+        // required: [true, "A StarkNet day must have an array of blocks"]
     },
     sortedContractsActivity: {
         type: mongoose.Schema.Types.Map,

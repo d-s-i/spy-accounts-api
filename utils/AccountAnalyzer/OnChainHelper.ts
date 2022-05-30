@@ -1,22 +1,26 @@
 import { Helper } from "./Helper";
 import { GetBlockResponse, InvokeFunctionTransaction } from "starknet-analyzer/src/types/rawStarknet";
 import { ContractDataTree, BlocksTree } from "./types";
-import { Provider } from "starknet";
+import { number, Provider } from "starknet";
 import { getSelectorFromName } from "starknet/utils/hash";
 import { DeployTransaction } from "starknet/types";
 
+import { RPCProvider } from "../RPCProvider/RPCProvider";
+
 export class OnChainHelper {
 
-    private _provider: Provider;
+    private _provider: Provider | RPCProvider;
+    private _msBetweekBlockQuery: number;
     private _EXECUTE_SELECTOR: string;
     private _AVG_STARKNET_MIN_PER_BLOCK = 1.5; // 1min30s
     private _STARKNET_BLOCKS_PER_DAY =  Helper.MIN_PER_DAY / this.AVG_STARKNET_MIN_PER_BLOCK;
     private _blocks: BlocksTree;
     
-    constructor(provider: Provider, blocks?: BlocksTree) {
+    constructor(provider: Provider | RPCProvider, blocks?: BlocksTree, msBetweekBlockQuery?: number) {
         this._provider = provider;
         this._EXECUTE_SELECTOR = getSelectorFromName("__execute__");
         this._blocks = blocks || {};
+        this._msBetweekBlockQuery = msBetweekBlockQuery || 0;
     }
     
     async getYesterdayBlockRange() {
@@ -44,13 +48,17 @@ export class OnChainHelper {
     }
     
     async _getLatestBlockNumber() {
-        const latestBlock = await this.provider.getBlock("pending");
-        if(isNaN(latestBlock.block_number)) {
-            throw new Error(
-                `OnChainHelper::_getLatestBlockNumber - latestBlockNumber is not a number (latestBlockNumber: ${latestBlock.block_number})`
-            );
+        if(this.provider instanceof Provider) {
+            const latestBlock = await this.provider.getBlock("pending");
+            if(isNaN(latestBlock.block_number)) {
+                throw new Error(
+                    `OnChainHelper::_getLatestBlockNumber - latestBlockNumber is not a number (latestBlockNumber: ${latestBlock.block_number})`
+                );
+            }
+            return latestBlock.block_number;
+        } else {
+            return await this.provider.getLatestBlockNumber();
         }
-        return latestBlock.block_number;
     }
 
     async getBlock(blockNumber: string) {
@@ -60,7 +68,7 @@ export class OnChainHelper {
             const _block = await this.provider.getBlock(blockNumber);
             const block = Helper.forceCast(_block) as GetBlockResponse;
             this._blocks[blockNumber] = block;
-            await Helper.sleep(500);
+            await Helper.sleep(this._msBetweekBlockQuery);
             return block;
         }
     }

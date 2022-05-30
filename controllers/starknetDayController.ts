@@ -81,7 +81,7 @@ export const addYesterdayStarknetDay = async function(req: express.Request, res:
     
     if(!starkneyDayExist) {
         const responseData = await apiActions.createStarknetDay();
-        apiActions.sendCreationSuccessful(responseData);
+        if(responseData) apiActions.sendCreationSuccessful(responseData);
     } else {
 
         if(!sortedContractsActivityExist && !organizedAccountsActivityExist) {

@@ -12,7 +12,7 @@ export interface MongooseContractDataTree {
     [key: string]: { 
         transactionCount: number, 
         type: string,
-        rawTransactions: InvokeFunctionTransaction[],
+        rawTransactions?: InvokeFunctionTransaction[],
         organizedTransactions?: {
             transactionHash: string,
             organizedFunctionCalls: {
