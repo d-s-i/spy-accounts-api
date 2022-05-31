@@ -32,6 +32,7 @@ export class ApiActions extends ApiResponses {
             });
             return starknetDay;
         } catch(error) {
+            console.log(error);
             return undefined;
         }
     }
