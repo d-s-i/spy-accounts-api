@@ -1,19 +1,18 @@
 import { OnChainHelper } from "./OnChainHelper";
-import { TransactionCallOrganizer } from "../StarknetAnalyzer/organizers/TransactionCallOrganizer";
-// import { TransactionCallOrganizer } from "starknet-analyzer/lib/organizers/TransactionCallOrganizer";
+import { TransactionCallOrganizer } from "starknet-analyzer/lib/organizers/TransactionCallOrganizer";
 import { DeployTransaction } from "starknet/types";
 import { InvokeFunctionTransaction } from "starknet-analyzer/src/types/rawStarknet";
+import { StandardProvider } from "starknet-analyzer/src/types";
 import { ContractData, ContractDataTree, BlocksTree, OrganizedTransaction } from "./types.d";
 
 import { Provider } from "starknet";
-import { RPCProvider } from "../RPCProvider/RPCProvider";
 
 export class AccountAnalyzer extends OnChainHelper {
 
     private _sortedContractsActivity: ContractDataTree;
     private _organizedAccountsActivity: ContractDataTree;
     
-    constructor(provider: Provider | RPCProvider, blocks?: BlocksTree, msBetweenBlockQuery?: number) {
+    constructor(provider: StandardProvider<Provider>, blocks?: BlocksTree, msBetweenBlockQuery?: number) {
         super(provider, blocks, msBetweenBlockQuery);
         this._sortedContractsActivity = {};
         this._organizedAccountsActivity = {};
@@ -25,7 +24,7 @@ export class AccountAnalyzer extends OnChainHelper {
 
         const allTransactions = await super._getAllTransactionsWithinBlockRange(startBlockNumber, endBlockNumber) as (DeployTransaction | InvokeFunctionTransaction)[];
             
-        const contractsActivity = super._getContractActivity(allTransactions);
+        const contractsActivity = super._getContractsActivity(allTransactions);
     
         this._sortedContractsActivity = this._sortContractsPerActivity(contractsActivity);
     
@@ -56,12 +55,17 @@ export class AccountAnalyzer extends OnChainHelper {
         const transactionCallOrganizer = _transactionCallOrganizer ? _transactionCallOrganizer : new TransactionCallOrganizer(this.provider);
         let organizedTx: OrganizedTransaction[] = [];
         for(const tx of account.rawTransactions) {
-            const _organizedFunctionCalls = await transactionCallOrganizer.getCalldataPerCallFromTx(tx);
-            if(_organizedFunctionCalls) {
-                organizedTx.push({
-                    transactionHash: tx.transaction_hash,
-                    organizedFunctionCalls: _organizedFunctionCalls
-                });
+            try {
+                const _organizedFunctionCalls = await transactionCallOrganizer.getCalldataPerCallFromTx(tx);
+                if(_organizedFunctionCalls) {
+                    organizedTx.push({
+                        transactionHash: tx.transaction_hash,
+                        organizedFunctionCalls: _organizedFunctionCalls
+                    });
+                }
+            } catch(error) {
+                console.log(`error with tx ${tx.transaction_hash}`);
+                console.log(error);
             }
         }
         return organizedTx;

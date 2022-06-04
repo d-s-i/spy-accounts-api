@@ -10,26 +10,18 @@ import { ApiActions } from "../utils/api/ApiActions";
 ///////////////////////////
 // getters
 export const getYesterdayStarknetDay = async function(req: express.Request, res: express.Response) {
-    console.log("Initializing apiAction");
     const apiActions = new ApiActions(res);
-    console.log("calling findStarknetDay on apiAction");
     const starknetDay = await apiActions.findStarknetDay(formatDate(new Date()));
-    console.log("sending get successful");
     apiActions.sendGetSuccessful({ starknetDay });
-    console.log("done");
 }
 
 export const getStarknetDay = async function(req: express.Request, res: express.Response) {
-    console.log("Initializing apiAction");
     const apiActions = new ApiActions(res);
-    console.log("calling findStarknetDay on apiAction");
     const starknetDay = await apiActions.findStarknetDay(req.params.date);
-    console.log("sending get successful");
 
     apiActions.sendGetSuccessful({
         starknetDay
     });
-    console.log("done");
 }
 
 export const getBlocksPerDate = async function(req: express.Request, res: express.Response) {
@@ -167,5 +159,4 @@ export const deleteOrganizedAccounts = async function(req: express.Request, res:
 
     const responseData = await apiActions.deleteField(req.params.date, "organizedAccountsActivity");
     apiActions.sendUpdateSuccessful(responseData);
-
 }

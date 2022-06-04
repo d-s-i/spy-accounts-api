@@ -1,4 +1,4 @@
-import { defaultProvider } from "starknet";
+import { defaultProvider, Provider } from "starknet";
 
 import { AccountAnalyzer } from "../utils/AccountAnalyzer/AccountAnalyzer";
 import { BlocksTree, ContractDataTree } from "../utils/AccountAnalyzer/types";
@@ -7,8 +7,10 @@ import { RPCProvider } from "./RPCProvider/RPCProvider";
 const URL = "http://127.0.0.1:9545";
 const provider = new RPCProvider(URL);
 
+// const provider = new Provider({  network: "mainnet-alpha" });
+
 export const fetchBlocksAndContractsAndAccounts = async function() {
-    const accountAnalyzer = new AccountAnalyzer(provider);
+    const accountAnalyzer = new AccountAnalyzer(provider, {}, 500);
     const [startBlockNumber, latestBlockNumber] = await accountAnalyzer.getYesterdayBlockRange();
     const sortedContractsActivity = (
         await accountAnalyzer.getTopAccountsFromBlockNumbers(startBlockNumber, latestBlockNumber)

@@ -1,22 +1,21 @@
 import { Helper } from "./Helper";
 import { GetBlockResponse, InvokeFunctionTransaction } from "starknet-analyzer/src/types/rawStarknet";
+import { StandardProvider } from "starknet-analyzer/src/types";
 import { ContractDataTree, BlocksTree } from "./types";
-import { number, Provider } from "starknet";
+import { Provider } from "starknet";
 import { getSelectorFromName } from "starknet/utils/hash";
 import { DeployTransaction } from "starknet/types";
 
-import { RPCProvider } from "../RPCProvider/RPCProvider";
-
 export class OnChainHelper {
 
-    private _provider: Provider | RPCProvider;
+    private _provider: StandardProvider<Provider>;
     private _msBetweekBlockQuery: number;
     private _EXECUTE_SELECTOR: string;
     private _AVG_STARKNET_MIN_PER_BLOCK = 1.5; // 1min30s
     private _STARKNET_BLOCKS_PER_DAY =  Helper.MIN_PER_DAY / this.AVG_STARKNET_MIN_PER_BLOCK;
     private _blocks: BlocksTree;
     
-    constructor(provider: Provider | RPCProvider, blocks?: BlocksTree, msBetweekBlockQuery?: number) {
+    constructor(provider: StandardProvider<Provider>, blocks?: BlocksTree, msBetweekBlockQuery?: number) {
         this._provider = provider;
         this._EXECUTE_SELECTOR = getSelectorFromName("__execute__");
         this._blocks = blocks || {};
@@ -38,7 +37,6 @@ export class OnChainHelper {
         // TODO: Add fee per transaction => sort address per fee spent
         for(let i = startBlockNumber; i <= endBlockNumber; i++) {
             Helper.displayProgress(milestones, i, "fetching blocks");
-    
             const _block = await this.getBlock(i.toString());
             const block = Helper.forceCast(_block) as GetBlockResponse;
             allTransactions.push(...block.transactions);
@@ -48,17 +46,13 @@ export class OnChainHelper {
     }
     
     async _getLatestBlockNumber() {
-        if(this.provider instanceof Provider) {
-            const latestBlock = await this.provider.getBlock("pending");
-            if(isNaN(latestBlock.block_number)) {
-                throw new Error(
-                    `OnChainHelper::_getLatestBlockNumber - latestBlockNumber is not a number (latestBlockNumber: ${latestBlock.block_number})`
-                );
-            }
-            return latestBlock.block_number;
-        } else {
-            return await this.provider.getLatestBlockNumber();
+        const latestBlock = await this.provider.getBlock("pending");
+        if(isNaN(latestBlock.block_number)) {
+            throw new Error(
+                `OnChainHelper::_getLatestBlockNumber - latestBlockNumber is not a number (latestBlockNumber: ${latestBlock.block_number})`
+            );
         }
+        return latestBlock.block_number;
     }
 
     async getBlock(blockNumber: string) {
@@ -73,11 +67,11 @@ export class OnChainHelper {
         }
     }
 
-    _getContractActivity(transactions: (DeployTransaction | InvokeFunctionTransaction)[]) {
+    _getContractsActivity(transactions: (DeployTransaction | InvokeFunctionTransaction)[]) {
         let contractsActivity: ContractDataTree = {};
         for(const tx of transactions) {
             if(tx.type === "DEPLOY") continue;
-            const type = this._getContractType(tx);
+            // const type = this._getContractType(tx);
     
             let amount = contractsActivity[tx.contract_address] && contractsActivity[tx.contract_address].transactionCount;
             
@@ -90,10 +84,11 @@ export class OnChainHelper {
     
             contractsActivity[tx.contract_address] = {
                 transactionCount: isNaN(amount) ? 1 : amount + 1,
-                type: type,
+                type: (contractsActivity[tx.contract_address] && contractsActivity[tx.contract_address].type === "ACCOUNT_CONTRACT") ? "ACCOUNT_CONTRACT" : this._getContractType(tx),
                 rawTransactions
             };
         }
+
         return contractsActivity;
     }
     

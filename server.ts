@@ -1,4 +1,5 @@
 import app from "./app";
+import { AddressInfo }  from "node:net";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
 
@@ -16,6 +17,7 @@ mongoose.connect(DB, {
 
 const PORT = process.env.PORT || 8000;
 const server = app.listen(PORT, () => {
-    console.log(PORT, process.env.PORT);
-    console.log(`App listening on port`, server.address());
+    const { port } = server.address() as AddressInfo;
+    console.log("PORT: ", PORT, "process.env.PORT", process.env.PORT);
+    console.log(`App listening on port ${port}` );
 });
